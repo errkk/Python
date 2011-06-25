@@ -1,9 +1,5 @@
 #! /usr/bin/env python
-import urllib, sgmllib, sys
-
-f = urllib.urlopen('http://wottonpool.co.uk')
-s = f.read()
-f.close()
+import urllib, sgmllib, sys, getopt, time
 
 class MyParser(sgmllib.SGMLParser):
 	"My Class for Parsing"
@@ -43,7 +39,8 @@ class CheckLinks():
 	def __init__(self):
 		self.urls404 = []
 		self.invalid = []
-	
+		self.start = time.time()
+		
 	def check(self, url):
 		try:
 			f = urllib.urlopen(url)
@@ -60,20 +57,42 @@ class CheckLinks():
 			return 0
 			
 	def looplinks(self,links):
+		count = 0
+		print 'Checking:'
 		for url in links:
 			self.check(url)
-			print url
+			count += 1
+			print '> %s' % url
+		print '---------'
+		timetaken = time.time() - self.start	
+ 		print 'Scanned %d urls in %.2f seconds' % ( count, timetaken )
+		print '---------'
 		
+try:
+	site = sys.argv[1]
+except:
+	site = 'http://google.com'
+	print 'Plese give a url'
+
+try:
+	f = urllib.urlopen(site)
+	s = f.read()
+	f.close()
+	myparser = MyParser()
+	myparser.parse(s)
+	links = myparser.get_hyperlinks()
+	
+except:
+	print 'Cant find %s' % site		
 		
-		
-myparser = MyParser()
-myparser.parse(s)
-links = myparser.get_hyperlinks()
+
 
 check = CheckLinks()
 check.looplinks(links)
 	
 print check.invalid
 print check.urls404
+
+
 
 
