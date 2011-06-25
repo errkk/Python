@@ -18,6 +18,7 @@ class MyParser(sgmllib.SGMLParser):
 		
 		sgmllib.SGMLParser.__init__(self, verbose)
 		self.hyperlinks = []
+		self.img = []		
 		
 	def start_a(self, attributes):
 		"Process a hyperlink and its attributes"
@@ -25,7 +26,15 @@ class MyParser(sgmllib.SGMLParser):
 		for name, value in attributes:
 			if name == "href":
 				self.hyperlinks.append(value)
-	
+
+	def start_img(self, attributes):
+		for name, value in attributes:
+			if name == "src":
+				self.img.append(value)
+
+		
+		
+		
 	def get_hyperlinks(self):
 		return self.hyperlinks
 		
