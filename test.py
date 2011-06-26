@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-import urllib, sgmllib, sys, getopt, time
+import urllib, sgmllib, sys, getopt, time, re
 
 class MyParser(sgmllib.SGMLParser):
 	"My Class for Parsing"
@@ -28,9 +28,6 @@ class MyParser(sgmllib.SGMLParser):
 			if name == "src":
 				self.img.append(value)
 
-		
-		
-		
 	def get_hyperlinks(self):
 		return self.hyperlinks
 		
@@ -41,20 +38,33 @@ class CheckLinks():
 		self.invalid = []
 		self.start = time.time()
 		
+	def _getcode(self,url):
+		f = urllib.urlopen(url)
+		code = f.getcode()
+		f.close()
+		return code
+	
+		
 	def check(self, url):
+		p = re.compile('http://')
+		match = p.findall(url)
+
+		if match.count('http://'):
+			test = url
+		else:
+			test = site + url
+			
+		print '> %s' % test
+
 		try:
-			f = urllib.urlopen(url)
-			code = f.getcode()
-			f.close()
+			code= self._getcode(test)			
 			if code == 404:
 				self.urls404.append(url)
-				return '404 %s' % url
-			else:
-				return code
-		
+			return code
 		except:
 			self.invalid.append(url)
-			return 0
+		 	return 0
+
 			
 	def looplinks(self,links):
 		count = 0
@@ -62,7 +72,6 @@ class CheckLinks():
 		for url in links:
 			self.check(url)
 			count += 1
-			print '> %s' % url
 		print '---------'
 		timetaken = time.time() - self.start	
  		print 'Scanned %d urls in %.2f seconds' % ( count, timetaken )
@@ -89,9 +98,23 @@ except:
 
 check = CheckLinks()
 check.looplinks(links)
+
+countinvalid = 0
+for i in check.invalid:
+	countinvalid += 1
 	
-print check.invalid
-print check.urls404
+if countinvalid:	
+	print 'There was %d invalid URLs' % countinvalid
+	print check.invalid
+
+
+count404 = 0
+for i in check.urls404:
+	count404 += 1	
+	
+if count404:	
+	print 'There were %d not found pages' % count404
+	print check.urls404
 
 
 
