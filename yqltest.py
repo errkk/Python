@@ -5,73 +5,64 @@ from operator import itemgetter, attrgetter
 y = yql.Public()
 
 class Boris():
-        def getDestination(self,place):
+        def bget(self,field,place,limit=5):
                 query = "select dockStation from xml where url='http://api.bike-stats.co.uk/service/rest/bikestats?format=xml' and dockStation.name like '%s' limit 5;" % ( '%' + place + '%' )
 
                 try:
                         result = y.execute(query)
 
-                        if 0 == int(result.count):
+                        if int(result.count) == 0:
                                 raise Exception("No results")
-                        elif None == result.count:
-                                raise Exception("No results")
-
+                        
+                        
                         d = []
+
                         
                         for row in result.rows:
 
                                 name = row.get('dockStation').get('name')
                                 ID = int(row.get('dockStation').get('ID'))
                                 slots = int(row.get('dockStation').get('emptySlots'))
+                                bikes = int(row.get('dockStation').get('bikesAvailable'))
 
-                                d.append ( ( name,slots ) )
-                            
+                                if 'slots' == field:
+                                        d.append ( ( name,slots ) )
+                                else:
+                                        d.append ( ( name,bikes ) )
 
-                        sortedStations = sorted(d, key=itemgetter(1), reverse=True)
+                        try:
+                                sortedStations = sorted(d, key=itemgetter(1), reverse=True)
+                                return sortedStations
+                        except:
+                                raise Exception('Can\'t sort stations')
+                                
+                        
+                except Exception, e:
+                        print e
+
+
+        def getDestination(self,place):
+                try:
+                        sortedStations = self.bget('slots',place)
 
                         for station in sortedStations:
                                  print '> %s has %d parking slots' % \
                                  ( station[0], station[1] )
-                        
-
-
-                    
-                        
-                except Exception, e:
+                except Exception,e:
                         print e
+                        print 'Can\'t find any stations for that name'
+                    
 
                         
         def getStart(self,place):
-                query = "select dockStation from xml where url='http://api.bike-stats.co.uk/service/rest/bikestats?format=xml' and dockStation.name like '%s' limit 5;" % ( '%' + place + '%' )
-
                 try:
-                        result = y.execute(query)
-
-                        if 0 == int(result.count):
-                                raise Exception("No results")
-                        elif None == result.count:
-                                raise Exception("No results")
-
-                        d = []
-        
-                        for row in result.rows:
-
-                                name = row.get('dockStation').get('name')
-                                ID = int(row.get('dockStation').get('ID'))
-                                bikes = int(row.get('dockStation').get('bikesAvailable'))
-
-                                d.append ( ( name,bikes ) )
-                            
-
-                        sortedStations = sorted(d, key=itemgetter(1), reverse=True)
+                        sortedStations = self.bget('bikes',place)
 
                         for station in sortedStations:
-                                 print '> %s has %d bikes' % \
+                                 print '> %s has %d bikes available' % \
                                  ( station[0], station[1] )
-                                 
-
-                except Exception, e:
-                        print e
+                except:
+                        print 'Can\'t find any stations for that name'                
                         
 
 location = raw_input('Where are you?')
