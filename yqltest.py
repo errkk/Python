@@ -73,5 +73,5 @@ print 'Sooo, you\'re going to %s from %s are ya?' % ( destination, location )
 Boris = Boris()
 print 'So near %s there are bikes at:' % location
 Boris.getStart( location )
-print 'and to park at %destination, how about:'
+print 'and to park at %s, how about:' % destination
 Boris.getDestination( destination )
